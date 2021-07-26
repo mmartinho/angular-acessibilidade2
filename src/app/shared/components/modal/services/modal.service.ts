@@ -9,6 +9,7 @@ import {
 import { ModalComponent } from './../modal.component';
 import { ModalConfig } from '../interfaces/modal-config';
 import { BodyInjectorService } from 'src/app/shared/services/body-injector.service';
+import { ModalRef } from '../models/modal-ref';
 
 @Injectable({
   providedIn: 'root',
@@ -34,10 +35,20 @@ export class ModalService {
    * @param config
    */
   public open(config: ModalConfig): ModalRef {
+    /** Cria a instância do componente e retorna sua referência */
     const componentRef = this.createComponentref();
-    componentRef.instance.config = config;
+    /** Passa a config para a instância do componente */
+    componentRef.instance.config = config; 
+    /** Posiciona o componente antes do app root */
     this.bodyInjector.stackBeforeAppRoot(componentRef);
-    return new ModalRef(componentRef);
+    /** Cria objeto do modal baseado na referência do coponente */
+    const modalRef = new ModalRef(componentRef);
+    /** 
+     * Salva a referencia do modal na instancia do componente. 
+     * Dessa forma, o componente pode acessar o modal
+     */
+    componentRef.instance.modalRef = modalRef;
+    return modalRef;
   }
 
   /**
@@ -45,22 +56,5 @@ export class ModalService {
    */
   private createComponentref(): ComponentRef<ModalComponent> {
     return this.componentFactory.create(this.injector);
-  }
-}
-
-/**
- *
- */
-export class ModalRef {
-  /**
-   * @param componentRef 
-   */
-  constructor(private componentRef: ComponentRef<ModalComponent>) {}
-
-  /**
-   *
-   */
-  public close(): void {
-    this.componentRef.destroy();
   }
 }
